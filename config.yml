@@ -1,0 +1,97 @@
+dataset_mapping:
+  'e837b8b1-1002-4ff1-a4ca-fb6a7ac928fd': chloris.aboveground_biomass_stock_and_change_30_m
+  '87251e55-8685-4a45-bf3a-52bfa3829b44': chloris.aboveground_biomass_stock_and_change_10_m
+  '53738a57-a889-43c9-8f7a-7cb306831700': planet.forest_carbon_diligence
+  '4d8bd6ba-b751-4c46-8e70-5000e6d8b212': planet.forest_carbon_monitoring
+  '084fa670-828b-4749-bbc3-77ad9123ad8e': kanop.monitoring_25_m
+  '4928812e-86b7-4339-8db9-f6bf8a82ff57': kanop.monitoring_10_m
+  'f79af205-e45d-45b2-99fb-5108d83bd6f5': kanop.screening_25_m
+
+time_format:
+  planet.forest_carbon_diligence: 'year'
+  planet.forest_carbon_monitoring: 'date'
+  kanop.monitoring_25_m: 'year'
+  kanop.monitoring_10_m: 'year'
+  kanop.screening_25_m: 'year'
+  chloris.aboveground_biomass_stock_and_change_30_m: 'year'
+  chloris.aboveground_biomass_stock_and_change_10_m: 'year'
+
+
+variables_units:
+  planet.forest_carbon_diligence:
+    'aboveground_live_carbon_density': 'Mg C/ha'
+    'aboveground_live_carbon_density_uncertainty_lower_bound': 'Mg C/ha' 
+    'aboveground_live_carbon_density_uncertainty_upper_bound': 'Mg C/ha'
+    'canopy_cover': '%' 
+    'canopy_cover_uncertainty_lower_bound': '%'
+    'canopy_cover_uncertainty_upper_bound': '%'
+    'canopy_height': 'm'
+    'canopy_height_uncertainty_lower_bound': 'm'
+    'canopy_height_uncertainty_upper_bound': 'm'
+  
+  planet.forest_carbon_monitoring:
+    'aboveground_live_carbon_density': 'Mg C/ha'
+    'aboveground_live_carbon_density_uncertainty_lower_bound': 'Mg C/ha' 
+    'aboveground_live_carbon_density_uncertainty_upper_bound': 'Mg C/ha'
+    'canopy_cover': '%' 
+    'canopy_cover_uncertainty_lower_bound': '%'
+    'canopy_cover_uncertainty_upper_bound': '%'
+    'canopy_height': 'm'
+    'canopy_height_uncertainty_lower_bound': 'm'
+    'canopy_height_uncertainty_upper_bound': 'm'
+
+  kanop.monitoring_25_m:
+    'canopy_cover': '%' 
+    'canopy_height': 'm'
+    'forest_cover': ''
+    'living_aboveground_biomass': 'Mg/ha' 
+    'living_belowground_biomass': 'Mg/ha'
+    'living_biomass': 'Mg/ha'
+    'living_biomass_carbon_stock': 'Mg C/ha'
+    'living_biomass_co2_eq': 'Mg CO₂ eq/ha' 
+    'raos_q_diversity_index': ''
+    'tree_height': 'm'
+
+  kanop.monitoring_10_m:
+    'canopy_cover': '%' 
+    'canopy_height': 'm'
+    'forest_cover': ''
+    'living_aboveground_biomass': 'Mg/ha' 
+    'living_belowground_biomass': 'Mg/ha'
+    'living_biomass': 'Mg/ha'
+    'living_biomass_carbon_stock': 'Mg C/ha'
+    'living_biomass_co2_eq': 'Mg CO₂ eq/ha' 
+    'raos_q_diversity_index': ''
+    'tree_height': 'm'
+  
+  kanop.screening_25_m:
+    'canopy_cover': '%' 
+    'canopy_height': 'm'
+    'forest_cover': ''
+    'living_aboveground_biomass': 'Mg/ha' 
+    'living_belowground_biomass': 'Mg/ha'
+    'living_biomass': 'Mg/ha'
+    'living_biomass_carbon_stock': 'Mg C/ha'
+    'living_biomass_co2_eq': 'Mg CO₂ eq/ha' 
+    'raos_q_diversity_index': ''
+    'tree_height': 'm'
+
+  chloris.aboveground_biomass_stock_and_change_30_m:
+    'aboveground_biomass_change': 'Mg/ha'
+    'aboveground_biomass_change_standard_error': 'Mg/ha'
+    'aboveground_biomass_stock': 'Mg/ha'
+    'aboveground_biomass_stock_standard_error': 'Mg/ha'
+    'forest_area_degradation': ''
+    'forest_area_gain': ''
+    'forest_area_loss': ''
+    'forest_cover': ''
+  
+  chloris.aboveground_biomass_stock_and_change_10_m:
+    'aboveground_biomass_change': 'Mg/ha'
+    'aboveground_biomass_change_standard_error': 'Mg/ha'
+    'aboveground_biomass_stock': 'Mg/ha'
+    'aboveground_biomass_stock_standard_error': 'Mg/ha'
+    'forest_area_degradation': ''
+    'forest_area_gain': ''
+    'forest_area_loss': ''
+    'forest_cover': ''
