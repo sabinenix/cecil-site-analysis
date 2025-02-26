@@ -4,13 +4,16 @@ import yaml
 import json
 import os
 import matplotlib.pyplot as plt
+import seaborn as sns
 from shapely import from_wkt
 import cecil
 
 # Import helper functions
 from utils import show_linked_reprojections
 from utils import get_reprojection_details_by_id
-from utils import query_all_data
+from utils import get_data_request_details_by_id
+from utils import query_all_data_analytics
+from utils import query_all_data_raw
 from utils import df_to_gdf
 
 
@@ -93,6 +96,7 @@ def plot_all_years(gdf, var_dict, var_of_interest, provider_name, output_folder)
     # Get the min and max values across timeseries to fix color ramp.
     max_val = gdf[var_of_interest].max()
     min_val = gdf[var_of_interest].min()
+    print(f"Global range for {var_of_interest}: {min_val} to {max_val}")
 
     # Determine if 'year' or 'time' column exists.
     if 'year' in gdf.columns:
@@ -115,30 +119,66 @@ def plot_all_years(gdf, var_dict, var_of_interest, provider_name, output_folder)
             title_value = group_value  # Year value for title
         
         # Plotting.
+        print(f"Year {group_value} range: {group_gdf[var_of_interest].min()} to {group_gdf[var_of_interest].max()}")
+
         fig, ax = plt.subplots(figsize=(8, 8))
         plot = group_gdf.plot(
             column=var_of_interest, 
             ax=ax,
             markersize=0.5,
-            legend=True,
-            cmap="viridis",
+            cmap="mako_r",
             vmin=min_val,
             vmax=max_val
         )
-        
-        # Pull colorbar units from var_dict.
-        colorbar = plot.get_figure().axes[-1]
-        colorbar.set_ylabel(f"{var_dict[var_of_interest]}")
+
+        # Get the position of the plot axes
+        pos = ax.get_position()
+
+        # Create the colorbar at the top with EXACTLY the same width as the plot
+        cbar_ax = fig.add_axes([pos.x0, pos.y0 + pos.height + 0.02, pos.width, 0.03])
+
+        # Create the colorbar
+        mappable = plot.get_children()[0]
+        cbar = fig.colorbar(mappable, cax=cbar_ax, orientation='horizontal')
+
+        # Set only endpoints (or endpoints + midpoint) on the colorbar
+        if min_val is not None and max_val is not None:
+            # Option 1: Only show endpoints
+            cbar.set_ticks([min_val, max_val])
+            
+            # Option 2: Show endpoints and midpoint (uncomment if you want this)
+            # midpoint = (min_val + max_val) / 2
+            # cbar.set_ticks([min_val, midpoint, max_val])
+
+        # Set the colorbar label
+        cbar.set_label(f"{var_dict[var_of_interest]}")
+
+        # Make sure ticks and label are on top
+        cbar_ax.xaxis.set_ticks_position('top')
+        cbar_ax.xaxis.set_label_position('top')
 
         # Set the plot options.
-        ax.set_title(f"{provider_name} - {var_of_interest} - {title_value}")
+        #ax.set_title(f"{title_value#}", pad=50)
         ax.set_xticks([])
         ax.set_yticks([])
-        plt.tight_layout()
+
+        # Don't use tight_layout() as it can adjust the carefully positioned axes
+        # Instead, use a fixed adjustment to account for the colorbar
+        plt.subplots_adjust(top=0.85)
+        
+        # # Pull colorbar units from var_dict.
+        # colorbar = plot.get_figure().axes[-1]
+        # colorbar.set_ylabel(f"{var_dict[var_of_interest]}")
+
+        # # Set the plot options.
+        # ax.set_title(f"{title_value}")
+        # ax.set_xticks([])
+        # ax.set_yticks([])
+        # plt.tight_layout()
 
         # Save the plot.
         output_file = os.path.join(output_folder, f"{provider_name}-{var_of_interest}_{title_value}.png")
-        plt.savefig(output_file, dpi=300)
+        plt.savefig(output_file, dpi=300, transparent=True)
         print(f'Saved figure to: {output_file}')
         plt.close()
 
@@ -278,8 +318,9 @@ def plot_dataset_timeseries(avg_df, dataset_name, output_folder):
     plt.savefig(output_file, dpi=300)
     plt.close()
 
-def plot_customer_analysis(reprojections_to_query, dataset_mapping, variable_dicts,
-                           year, vars_of_interest, time_columns, output_dir):
+def plot_customer_analysis(reprojections_to_query, data_requests_to_query,
+                           dataset_mapping, variable_dicts, year, 
+                           vars_of_interest, time_columns, output_dir):
     """ 
     Plots the raster image analysis for a customer. 
     
@@ -310,7 +351,7 @@ def plot_customer_analysis(reprojections_to_query, dataset_mapping, variable_dic
 
     # Query data for all the reprojections listed.
     for reprojection_id in reprojections_to_query:
-        df = query_all_data(reprojection_id, dataset_mapping)
+        df = query_all_data_analytics(reprojection_id, dataset_mapping)
         gdf = df_to_gdf(df, crs="EPSG:4326")
         dataset_name, aoi_name, aoi_id = get_reprojection_details_by_id(reprojection_id, dataset_mapping)
 
@@ -322,14 +363,29 @@ def plot_customer_analysis(reprojections_to_query, dataset_mapping, variable_dic
         # Add gdf to dictionary with reprojection_id as key.
         data_dict[reprojection_id] = gdf
 
+    # Query the raw_db data for all the data requests listed.
+    for data_request_id in data_requests_to_query:
+        df = query_all_data_raw(data_request_id, dataset_mapping)
+        gdf = df_to_gdf(df, crs="EPSG:4326")
+        dataset_name, aoi_name, aoi_id = get_data_request_details_by_id(data_request_id, dataset_mapping)
+
+        data_dict[data_request_id] = gdf
+
+
     # Loop through each dataset (reprojection by reprojection) and plot the variables.
-    for reprojection_id in data_dict.keys():
-        dataset_name, aoi_name, aoi_id = get_reprojection_details_by_id(reprojection_id, dataset_mapping)
+    for data_id in data_dict.keys():
+        if data_id in reprojections_to_query:
+            dataset_name, aoi_name, aoi_id = get_reprojection_details_by_id(data_id, dataset_mapping)
+        elif data_id in data_requests_to_query:
+            dataset_name, aoi_name, aoi_id = get_data_request_details_by_id(data_id, dataset_mapping)
+        else:
+            raise ValueError(f"data_id {data_id} is not in either reprojections_to_query or data_requests_to_query.")
+
         provider_name = dataset_name.split(".")[0]
         print(f'Plotting data for aoi: {aoi_name}, dataset: {provider_name} - {dataset_name}')
 
         # Subset to just one dataset at a time for plotting.
-        gdf_plot = data_dict[reprojection_id]
+        gdf_plot = data_dict[data_id]
 
         # Extract the relevant dict of variables and units.
         if dataset_name in variable_dicts:
@@ -337,9 +393,9 @@ def plot_customer_analysis(reprojections_to_query, dataset_mapping, variable_dic
         else:
             print(f"Dataset {dataset_name} not found in variable dictionaries.")
 
-        # Plot all variables for just one year.
-        output_folder = f"{output_dir}/{aoi_name}/{dataset_name}/variables"
-        plot_all_vars(gdf_plot, var_dict, year, provider_name, output_folder)
+        # # Plot all variables for just one year.
+        # output_folder = f"{output_dir}/{aoi_name}/{dataset_name}/variables"
+        # plot_all_vars(gdf_plot, var_dict, year, provider_name, output_folder)
 
         # Select the variable of interest based on dataset name and plot the variable timeseries.
         var_of_interest = vars_of_interest[dataset_name]
@@ -348,16 +404,16 @@ def plot_customer_analysis(reprojections_to_query, dataset_mapping, variable_dic
         plot_all_years(gdf_plot, var_dict, var_of_interest, provider_name, output_folder)
 
         
-        # Get the name of the column with time information based on dataset name.
-        time_column = time_columns[dataset_name]
-        print(f"Time column for {dataset_name}: {time_column}")
+        # # Get the name of the column with time information based on dataset name.
+        # time_column = time_columns[dataset_name]
+        # print(f"Time column for {dataset_name}: {time_column}")
 
-        # Calculate the average dataframe and plot timeseries
-        timeseries_output_folder = f"{output_dir}/{aoi_name}/{dataset_name}/average_timeseries"
-        os.makedirs(timeseries_output_folder, exist_ok=True)
-        avg_df = calculate_avg_df(gdf_plot, dataset_name, time_column)
-        avg_df.to_csv(f'{timeseries_output_folder}/average_timeseries_AGB.csv')
-        plot_dataset_timeseries(avg_df, dataset_name, timeseries_output_folder)
+        # # Calculate the average dataframe and plot timeseries
+        # timeseries_output_folder = f"{output_dir}/{aoi_name}/{dataset_name}/average_timeseries"
+        # os.makedirs(timeseries_output_folder, exist_ok=True)
+        # avg_df = calculate_avg_df(gdf_plot, dataset_name, time_column)
+        # avg_df.to_csv(f'{timeseries_output_folder}/average_timeseries_AGB.csv')
+        # plot_dataset_timeseries(avg_df, dataset_name, timeseries_output_folder)
 
     return data_dict
 
@@ -373,16 +429,18 @@ if __name__ == "__main__":
     time_columns = config['time_format']
 
     # Pull customer specific parameters from yml file.
-    with open('customer_ymls/rhyzo.yml', 'r') as file:
+    with open('customer-ymls/orbify-newsletter.yml', 'r') as file:
         customer_config = yaml.safe_load(file)
     year = customer_config['year']
     vars_of_interest = customer_config['vars_of_interest']
     reprojections_to_query = customer_config['reprojections_to_query']
+    data_requests_to_query = customer_config['data_requests_to_query']
 
-    output_dir = "outputs/rhyzo_2"
+    output_dir = "outputs/orbify-newsletter"
 
     # Plot the charts
     plot_customer_analysis(reprojections_to_query, 
+                           data_requests_to_query,
                            dataset_mapping, 
                            variable_dicts, 
                            year, 
