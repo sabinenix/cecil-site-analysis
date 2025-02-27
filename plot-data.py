@@ -373,13 +373,13 @@ if __name__ == "__main__":
     time_columns = config['time_format']
 
     # Pull customer specific parameters from yml file.
-    with open('customer_ymls/rhyzo.yml', 'r') as file:
+    with open('customer-ymls/rhyzo.yml', 'r') as file:
         customer_config = yaml.safe_load(file)
     year = customer_config['year']
     vars_of_interest = customer_config['vars_of_interest']
     reprojections_to_query = customer_config['reprojections_to_query']
 
-    output_dir = "outputs/rhyzo_2"
+    output_dir = "outputs/rhyzo_3"
 
     # Plot the charts
     plot_customer_analysis(reprojections_to_query, 
