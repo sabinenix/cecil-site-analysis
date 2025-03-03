@@ -9,7 +9,7 @@ from shapely import from_wkt
 import cecil
 
 # Import helper functions
-from utils import show_linked_reprojections
+from utils import show_linked_requests
 from utils import get_reprojection_details_by_id
 from utils import get_data_request_details_by_id
 from utils import query_all_data_analytics

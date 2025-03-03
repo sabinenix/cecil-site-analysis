@@ -60,7 +60,7 @@ def get_reprojection_details_by_id(reprojection_id, dataset_mapping):
     """For a given reprojection ID, return the dataset name, aoi name and ID."""
     
     # Get full dataframe linking reprojections to datasets and AOIs.
-    result_df = show_linked_reprojections(dataset_mapping)
+    result_df = show_linked_requests(dataset_mapping)
 
     # Filter to get just the reprojection ID.
     filtered = result_df[result_df['reprojection_id'] == reprojection_id]
@@ -79,7 +79,7 @@ def get_data_request_details_by_id(data_request_id, dataset_mapping):
     """For a given data request ID, return the dataset name, aoi name and ID."""
     
     # Get full dataframe linking reprojections to datasets and AOIs.
-    result_df = show_linked_reprojections(dataset_mapping)
+    result_df = show_linked_requests(dataset_mapping)
 
     # Filter to get just the reprojection ID.
     filtered = result_df[result_df['data_request_id'] == data_request_id]
