@@ -6,9 +6,9 @@ from shapely.geometry import shape
 
 
 
-def show_linked_reprojections(dataset_mapping):
-    """For the current organisation, list all the reprojections with their 
-    relevant datasets, resolutions, and the AOI names and IDs."""
+def show_linked_requests(dataset_mapping):
+    """For the current organisation, list all the data requests with their 
+    relevant reprojections, datasets, resolutions, and the AOI names and IDs."""
     client = cecil.Client()
 
     # List all reprojections, data requests and AOIs in an organisation.
@@ -16,34 +16,33 @@ def show_linked_reprojections(dataset_mapping):
     data_requests = client.list_data_requests()
     aois = client.list_aois()
 
-    # Convert objects to dictionaries
+    # Convert objects to dictionaries.
     reprojection_dicts = [vars(r) for r in reprojections]
     data_request_dicts = [vars(dr) for dr in data_requests]
     aoi_dicts = [vars(aoi) for aoi in aois]
 
-    # Convert lists of dictionaries to DataFrames
+    # Convert lists of dictionaries to DataFrames.
     reprojection_df = pd.DataFrame(reprojection_dicts)
     data_request_df = pd.DataFrame(data_request_dicts)
     aoi_df = pd.DataFrame(aoi_dicts)
     
-    # Rename columns before merging to avoid confusion
+    # Rename id columns before merging to clarify type of id.
     reprojection_df = reprojection_df.rename(columns={'id': 'reprojection_id'})
     data_request_df = data_request_df.rename(columns={'id': 'data_request_id'})
     aoi_df = aoi_df.rename(columns={'id': 'aoi_id', 'name': 'aoi_name'})
 
-    # Add dataset names using the dataset_mapping dictionary
+    # Add dataset names using the dataset_mapping dictionary.
     data_request_df['dataset_name'] = data_request_df['dataset_id'].map(dataset_mapping)
     
-    # First merge data requests with AOIs
+    # First merge data requests with AOIs.
     dr_aoi_df = data_request_df.merge(
         aoi_df,
         left_on='aoi_id',
         right_on='aoi_id',
-        how='left'  # Keep all data requests even if AOI is missing
+        how='left'
     )
     
-    # Then left join with reprojections
-    # This keeps all data requests even if no reprojections exist
+    # Next, merge the data requests with the reprojections.
     result_df = dr_aoi_df.merge(
         reprojection_df,
         left_on='data_request_id',
@@ -51,10 +50,9 @@ def show_linked_reprojections(dataset_mapping):
         how='left'  # Keep all data requests even if no reprojection exists
     )
 
-    # Select and order relevant columns
+    # Select and order relevant columns for resulting dataframe.
     result_df = result_df[['data_request_id', 'reprojection_id', 'dataset_name', 'resolution', 'aoi_name', 'aoi_id']]
 
-    # Display the resulting DataFrame
     return result_df
 
 
@@ -98,7 +96,7 @@ def get_data_request_details_by_id(data_request_id, dataset_mapping):
 
 
 def query_all_data_analytics(reprojection_id, dataset_mapping):
-    """Pull all data for a given reprojection_id and aoi_id."""
+    """Pull all data for a given reprojection_id."""
 
     client = cecil.Client()
 
@@ -120,7 +118,7 @@ def query_all_data_analytics(reprojection_id, dataset_mapping):
     return df
 
 def query_all_data_raw(data_request_id, dataset_mapping):
-    """Pull all data from the raw_db for a given data_request_id and aoi_id."""
+    """Pull all data from the raw_db for a given data_request_id."""
 
     client = cecil.Client()
 
